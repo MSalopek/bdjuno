@@ -10,14 +10,13 @@ services:
       - POSTGRES_USER=bdjuno
       - POSTGRES_PASSWORD=bdjuno
       - POSTGRES_DB=bdjuno
-      - POSTGRES_HOST_AUTH_METHOD=trust
       - PGDATA=/var/lib/postgresql/data
     ports:
       - 5432:5432
     # bind volumes
     volumes:
-      - ./db/data:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./devenv/data:/var/lib/postgresql/data
+      - ./devenv/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
   hasura:
     image: hasura/graphql-engine:v2.0.4
@@ -27,6 +26,9 @@ services:
     depends_on:
       - pg-juno
     environment:
+      HASURA_GRAPHQL_UNAUTHORIZED_ROLE: anonymous
+      ## postgres database to store Hasura metadata
+      # HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://bdjuno:bdjuno@pg-juno:5432/bdjuno
       ## this env var can be used to add the above postgres database to Hasura as a data source. this can be removed/updated based on your needs
       HASURA_GRAPHQL_DATABASE_URL: postgres://bdjuno:bdjuno@pg-juno:5432/bdjuno
       ## enable the console served by server
@@ -34,14 +36,15 @@ services:
       ## enable debugging mode. It is recommended to disable this in production
       HASURA_GRAPHQL_DEV_MODE: "true"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+      ACTION_BASE_URL: http://localhost:3000
       ## uncomment next line to set an admin secret
-      HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+      HASURA_GRAPHQL_ADMIN_SECRET: supersecret
 
-  wait-for-db:
-    image: dadarek/wait-for-dependencies
-    depends_on:
-      - db
-    command: db:5432
+  # wait-for-db:
+  #   image: dadarek/wait-for-dependencies
+  #   depends_on:
+  #     - pg-juno
+  #   command: db:5432
 
   # bdjuno:
   #   build:
