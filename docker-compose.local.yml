@@ -15,15 +15,9 @@ services:
     ports:
       - 5432:5432
     # bind volumes
-    volumes: 
+    volumes:
       - ./db/data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
-
-  wait-for-db:
-    image: dadarek/wait-for-dependencies
-    depends_on:
-      - db
-    command: db:5432
 
   hasura:
     image: hasura/graphql-engine:v2.0.4
@@ -42,6 +36,12 @@ services:
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
       ## uncomment next line to set an admin secret
       HASURA_GRAPHQL_ADMIN_SECRET: myadminsecretkey
+
+  wait-for-db:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - db
+    command: db:5432
 
   # bdjuno:
   #   build:
